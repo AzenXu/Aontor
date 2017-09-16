@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %} 这是标题 {% endblock %}
+
+{% block page_content %}
+    <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}"> {#  添加头像  #}
+    <h1>{{ user.username }}</h1>
+    <div>
+        {% if user == current_user %}
+            <a href="{{ url_for('.edit_profile') }}">
+                <span class="label label-warning">Edit Profile</span>
+            </a>
+        {% endif %}
+        {% if current_user.is_administrator() %}
+            <a href="{{ url_for('.edit_profile_admin', id=user.id) }}">
+                <span class="label label-primary">Edit Profile [Admin]</span>
+            </a>
+        {% endif %}
+    </div>
+    <div>
+        {% if current_user.can(Permission.FOLLOW) and user != current_user %}
+            {% if  not current_user.is_following(user) %}
+                {# 注意，这里的路由并不是要真的跳转到一个新界面，只是通过路由调用「关注」方法而已。调用完之后还会跳转回来的...这种用法很不错吧~ #}
+                <a href="{{ url_for('.follow', username=user.username) }}" class="btn btn-primary">
+                    Follow
+                </a>
+            {% else %}
+                <a href="{{ url_for('.unfollow', username=user.username) }}" class="btn btn-default">
+                    Unfollow
+                </a>
+            {% endif %}
+        {% endif %}
+        <a href="#{#{{ url_for('.followers', username=user.username) }}#}">Followers: <span class="badge">{{ user.followers.count() }}</span></a>
+        <a href="#{#{{ url_for('.followed_by', username=user.username) }}#}">Following: <span class="badge">{{ user.followed.count() }}</span></a>
+        {% if current_user.is_authenticated and user != current_user and user.is_following(current_user) %}
+            <span class="label label-default">Your Fans</span>
+        {% endif %}
+    </div>
+    {% if user.name or user.location %}
+        <p>
+            {% if user.name %}
+                {{ user.name }}
+            {% endif %}
+            {% if user.location %}
+                From <a href="http://maps.google.com/?q={{ user.location }}">
+                    {{ user.location }}
+            </a>
+            {% endif %}
+        </p>
+    {% endif %}
+    {% if current_user.is_administrator() %}
+        <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+    {% endif %}
+    {% if user.about_me %}
+        <p>{{ user.about_me }}</p>
+    {% endif %}
+    <p>
+        老铁加入时间：{{ user.member_since }}
+        老铁最近活动时间：{{ user.last_seen }}.
+    </p>
+
+    {#  _是习惯用法，用来区分独立模板和局部模板  #}
+    {% include '_posts.html' %}
+{% endblock %}
