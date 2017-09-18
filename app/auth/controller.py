@@ -10,7 +10,7 @@ from .. import db
 # from ..email import send_email
 
 
-@auth.before_app_request  #  每次请求用户相关，更新用户的last_seen值
+@auth.before_app_request
 def before_request():
     if current_user.is_authenticated:
         current_user.ping()
@@ -23,7 +23,6 @@ def before_request():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        # 根据email捞用户
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             # 记住我 - 如果为True，会在浏览器里写入一个长期有效的cookie
