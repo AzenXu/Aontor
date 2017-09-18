@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 
-from flask import render_template, session, redirect, url_for, flash, abort, request, current_app
+from flask import render_template, redirect, url_for, flash, abort, request, current_app
 from . import main
-from .view_models import NameForm, EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
+from .view_models import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
 from .. import db
 from ..models import User, Permission, Role, Post, Comment
 from flask_login import login_required, current_user
@@ -150,30 +150,6 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
-
-
-@main.route('/oldhome', methods=['GET', 'POST'])
-def indexold():
-    form = NameForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.name.data).first()  # 捞
-
-        if user is None:
-            user = User(username=form.name.data)
-            db.session.add(user)
-            # db.session.commit() - 前面配置了app.config所以这里会自动commit
-            session['known'] = False
-            flash('first time here? welcome~~')  # 捞不到创建
-        else:
-            session['known'] = True
-
-        session['name'] = form.name.data
-        form.name.data = ''
-        return redirect(url_for('main.index'))  # 蓝本里使用url_for函数，要通过蓝本名.index()视图函数的URL使用url函数
-        # .index是main.index的简写形式 -> 省略蓝本名
-    return render_template('index-sqltest.html',
-                           form=form, name=session.get('name'),
-                           known=session.get('known', False))
 
 
 # 关注和取消关注这两个方法，最能体现什么叫「前后端分离」...逻辑要在后端实现 - controller层，展示在前端 - view层

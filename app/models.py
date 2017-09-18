@@ -25,6 +25,7 @@ import hashlib
 import bleach
 from markdown import markdown
 
+
 # 9.1 用户权限
 class Permission:
     def __init__(self):
@@ -56,7 +57,8 @@ class Role(db.Model):
         roles = {
             'User': (Permission.FOLLOW | Permission.COMMENT | Permission.WRITE_ARITICLES, True),
             'Moderator': (
-            Permission.FOLLOW | Permission.COMMENT | Permission.WRITE_ARITICLES | Permission.MODERATE_COMMENTS, False),
+                Permission.FOLLOW | Permission.COMMENT | Permission.WRITE_ARITICLES | Permission.MODERATE_COMMENTS,
+                False),
             'Administrator': (0xff, False)
         }
         for r in roles:
@@ -71,12 +73,14 @@ class Role(db.Model):
     def __repr__(self):  # 可选方法，同iOS类的description方法
         return '<Role %r>' % self.name
 
+
 # 自定义一个表示关注关系的表
 class Follow(db.Model):
     __tablename__ = 'follows'
     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -87,6 +91,7 @@ class Comment(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     body = db.Column(db.Text)
     approves_count = db.Column(db.Integer)
+
 
 class User(UserMixin, db.Model):  # 8.4注释：传说中的多继承？
     __tablename__ = 'users'
@@ -113,8 +118,12 @@ class User(UserMixin, db.Model):  # 8.4注释：传说中的多继承？
     comments = db.relationship('Comment', backref='user', lazy='dynamic')
 
     # 第12章 - 相互关注 - 这里还木有理顺，之后需要花专门的一块时间来复习复习数据库，比如join的意思...
-    followed = db.relationship('Follow', foreign_keys=[Follow.follower_id], backref=db.backref('follower', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
-    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id], backref=db.backref('followed', lazy='joined'), lazy='dynamic', cascade='all, delete-orphan')
+    followed = db.relationship('Follow', foreign_keys=[Follow.follower_id],
+                               backref=db.backref('follower', lazy='joined'), lazy='dynamic',
+                               cascade='all, delete-orphan')
+    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id],
+                                backref=db.backref('followed', lazy='joined'), lazy='dynamic',
+                                cascade='all, delete-orphan')
 
     # 第12章 - 定义一些和关注相关的常用方法
     def is_following(self, user):
@@ -145,7 +154,7 @@ class User(UserMixin, db.Model):  # 8.4注释：传说中的多继承？
             url = 'http://www.gravatar.com/avatar'
         hash = self.avatar_hash or hashlib.md5(self.email.encode('utf-8')).hexdigest()
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-                 url=url, hash=hash, size=size, default=default, rating=rating)
+            url=url, hash=hash, size=size, default=default, rating=rating)
 
     @property  # - 这里学习get、set方法的定义
     def password(self, password):
@@ -219,7 +228,10 @@ class User(UserMixin, db.Model):  # 8.4注释：传说中的多继承？
 
         seed()
         for i in range(count):
-            u = User(email=forgery_py.internet.email_address(),username=forgery_py.internet.user_name(True),password=forgery_py.lorem_ipsum.word(),confirmed=True,name=forgery_py.name.full_name(),location=forgery_py.address.city(),about_me=forgery_py.lorem_ipsum.sentence(),member_since=forgery_py.date.date(True))
+            u = User(email=forgery_py.internet.email_address(), username=forgery_py.internet.user_name(True),
+                     password=forgery_py.lorem_ipsum.word(), confirmed=True, name=forgery_py.name.full_name(),
+                     location=forgery_py.address.city(), about_me=forgery_py.lorem_ipsum.sentence(),
+                     member_since=forgery_py.date.date(True))
             db.session.add(u)
             # 随机生成的数据，有可能email或username不唯一，有可能报错
             try:
@@ -227,7 +239,8 @@ class User(UserMixin, db.Model):  # 8.4注释：传说中的多继承？
             except IntegrityError:
                 db.session.rollback()
 
-#  这个类的设计目的是为了不管用户是否登录，都能调用current_user.can方法和is_administrator方法 - 通用性设计
+
+# 这个类的设计目的是为了不管用户是否登录，都能调用current_user.can方法和is_administrator方法 - 通用性设计
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
@@ -235,8 +248,10 @@ class AnonymousUser(AnonymousUserMixin):
     def is_administrator(self):
         return False
 
-#  配置默认用户所属的类
+
+# 配置默认用户所属的类
 login_manager.anonymous_user = AnonymousUser
+
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -246,7 +261,8 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     body_html = db.Column(db.Text)  # markdown渲染成的HTML
     # 13章
-    comments = db.relationship('Comment', backref='post', lazy='dynamic')  #作用：1.当调用post.comments的时候，会先从Comment表中找外键是Post的属性，然后筛选属性值是自己的comment
+    comments = db.relationship('Comment', backref='post',
+                               lazy='dynamic')  # 作用：1.当调用post.comments的时候，会先从Comment表中找外键是Post的属性，然后筛选属性值是自己的comment
 
     # 生成测试数据的方法11.3.1节
     @staticmethod
@@ -258,7 +274,7 @@ class Post(db.Model):
         user_count = User.query.count()
         for i in range(count):
             u = User.query.offset(randint(0, user_count - 1)).first()  # offset: 查询过滤器，会跳过参数中指定的记录数量...
-            p = Post(body=forgery_py.lorem_ipsum.sentence(),timestmp=forgery_py.date.date(True),author=u)
+            p = Post(body=forgery_py.lorem_ipsum.sentence(), timestmp=forgery_py.date.date(True), author=u)
             db.session.add(p)
             db.session.commit()
 
@@ -267,9 +283,11 @@ class Post(db.Model):
         print('我进来了！~~~！！！~~~')
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
                         'h1', 'h2', 'h3', 'p']
-        target.body_html = bleach.linkify(bleach.clean(     # 第二步：clean函数清洗  # 第三步：linkify - 把纯文本中的url转为a标签
+        target.body_html = bleach.linkify(bleach.clean(  # 第二步：clean函数清洗  # 第三步：linkify - 把纯文本中的url转为a标签
             markdown(value, output_format='html'),  # 第一步：把value转变为html
             tags=allowed_tags,
             strip=True
         ))
-db.event.listen(Post.body, 'set', Post.on_changed_body)  #  监听body的set方法，设置给body_html
+
+
+db.event.listen(Post.body, 'set', Post.on_changed_body)  # 监听body的set方法，设置给body_html
