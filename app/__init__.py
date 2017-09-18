@@ -1,21 +1,12 @@
 # -*- coding:UTF-8 -*-
 
-# 这是一个构造函数，app对象从这里生成，以方便进行配置
-# 在这里导入需要用到的库，但是不初始化（仅实例化），因为app还没生成
-
-# 这里引入记录登录状态的库 - 书8.4节
-# 专门用来管理用户认证系统中的认证状态的，不依赖特定认证机制
 from flask_login import LoginManager
-
-# 这里开始MarkDown
 from flask_pagedown import PageDown
-
-# --- 下面是旧的 ---
-from flask import Flask, render_template
+from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
-from config import config  # 导入自定义的config字典
+from config import config
 
 bootstrap = Bootstrap()
 mail = Mail()
@@ -41,7 +32,6 @@ def create_app(config_name):
     db.init_app(app)
 
     login_manager.init_app(app)
-    # markdown初始化
     pagedown.init_app(app)
 
     # 使用蓝本定义路由 - 蓝本描述了路由和错误处理
@@ -50,9 +40,9 @@ def create_app(config_name):
 
     # 注册用户蓝本
     from .auth import auth as auth_blueprint
-    # url_prefix参数 - 以后在蓝本中定义的所有路由，都会加上指定的前缀
-    # 如: /login路由会注册成/auth/login
-    # 对应的url: http://localhost:5000/auth/login
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
+
+    from .errors import errors as errors_blueprint
+    app.register_blueprint(errors_blueprint)
 
     return app
