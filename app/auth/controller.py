@@ -2,11 +2,13 @@
 
 from flask import render_template, redirect, request, url_for, flash, session
 from flask_login import login_user, current_user
-from flask_login import logout_user, login_required
+from flask_login import logout_user
 from . import auth
 from ..models import User
 from .view_models import LoginForm, RegistrationForm
 from .. import db
+
+
 # from ..email import send_email
 
 
@@ -28,12 +30,11 @@ def login():
             # 记住我 - 如果为True，会在浏览器里写入一个长期有效的cookie
             # 这个Cookie可以复现用户会话
             login_user(user, form.remember_me.data)
-            # 这里注意：当用户没登录且访问一个需要登录的界面时，会把原地址存在request.args的next里
-            # 更新一下session的'name'
             session['name'] = user.username
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid username or password')
     return render_template('auth/login.html', form=form)
+
 
 @auth.route('/logout')
 def logout():
@@ -41,6 +42,7 @@ def logout():
     flash('You have been logged out.')
     session['name'] = ''
     return redirect(url_for('main.index'))
+
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
