@@ -6,7 +6,7 @@ from app.models import Permission
 
 errors = Blueprint('errors', __name__)
 
-from . import views
+from . import controller
 
 
 #  使用上下文处理器，让模板可能检查权限

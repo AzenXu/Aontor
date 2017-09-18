@@ -9,7 +9,7 @@ from app.models import Permission
 
 main = Blueprint('main', __name__)  # 创建蓝本 - 蓝本名字， 蓝本所在的包
 
-from . import views
+from . import controller
 
 
 # 导入进来，就意味着这两个文件中的代码会被执行！这和编译型语言非常不同...

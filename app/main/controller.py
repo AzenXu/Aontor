@@ -31,8 +31,6 @@ def index():
     if current_user.is_authenticated:
         # 从cookie里取show_followed字段。request.cookies这是一个字典
         show_followed = bool(request.cookies.get('show_followed', ''))
-        print(
-        'show_followed result = ' + 'show followed' if show_followed else 'show all' + 'request = ' + str(request))
     if show_followed:
         query = current_user.followed_posts
     else:
