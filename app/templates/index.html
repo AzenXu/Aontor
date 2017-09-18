@@ -1,20 +1,38 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{# Flask-PageDown提供了一个模板宏，从CDN中加载渲染markdown所需文件 #}
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}
 
 {% block title %}Home{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-  <h1>
-    Hello~~~，
-    {% if name %}
-      {{ name }}
-    {% else %}
-      Stranger
-    {% endif %}
-    !
-  </h1>
-</div>
+    <div>
+        {% if current_user.can(Permission.WRITE_ARITICLES) %}
+            {{ wtf.quick_form(form) }}
+        {% endif %}
+    </div>
 
-{{ wtf.quick_form(form) }}
+    <div class="page-header">
+      <h1>
+        Hello~~~，
+        {% if name %}
+          {{ name }}
+        {% else %}
+          Stranger
+        {% endif %}
+        !
+      </h1>
+    </div>
+
+    {% include 'posts/_posts.html' %}
+
+    <div class="pagination">
+        {{ macros.pagination_widget(pagination, '.index') }} {# 用宏函数的方法插入定义的块，pagination是从路由的地方传进来的 #}
+    </div>
+
 {% endblock %}

@@ -43,8 +43,9 @@ def index():
     pagination = query.order_by(Post.timestmp.desc()).paginate(page,
                                                                per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
                                                                error_out=False)
+
     posts = pagination.items
-    return render_template('index_with_posts.html', form=form, posts=posts, pagination=pagination)
+    return render_template('index.html', form=form, posts=posts, pagination=pagination)
 
 
 # 显示所有文章 - from 12.4
@@ -78,7 +79,7 @@ def user(username):
     if user is None:
         abort(404)
     posts = user.posts.order_by(Post.timestmp.desc()).all()
-    return render_template('user.html', user=user, posts=posts)
+    return render_template('users/user.html', user=user, posts=posts)
 
 
 @main.route('/post/<int:id>', methods=['GET', 'POST'])
@@ -90,7 +91,7 @@ def post(id):
                           post_id=id)  # Post需要的是真正的user对象，current_user是对user的轻度包装，所以需要通过_get_current_object获取真正的对象
         db.session.add(comment)
         return redirect(url_for('.post', id=id))
-    return render_template('post.html', posts=[post], form=commentForm, comments=[post.comments])
+    return render_template('posts/post.html', posts=[post], form=commentForm, comments=[post.comments])
 
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -106,7 +107,7 @@ def edit(id):
         flash('The post has been updated.')
         return redirect(url_for('.post', id=post.id))
     form.body.data = post.body
-    return render_template('edit_post.html', form=form)
+    return render_template('posts/edit_post.html', form=form)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])
@@ -123,7 +124,7 @@ def edit_profile():
     form.name.data = current_user.name
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html', form=form)
+    return render_template('users/edit_profile.html', form=form)
 
 
 @main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
@@ -149,7 +150,7 @@ def edit_profile_admin(id):
     form.name.data = user.name
     form.location.data = user.location
     form.about_me.data = user.about_me
-    return render_template('edit_profile.html', form=form, user=user)
+    return render_template('users/edit_profile.html', form=form, user=user)
 
 
 # 关注和取消关注这两个方法，最能体现什么叫「前后端分离」...逻辑要在后端实现 - controller层，展示在前端 - view层

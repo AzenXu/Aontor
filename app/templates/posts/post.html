@@ -5,10 +5,10 @@
 
 {% block page_content %}
 {#  文章内容  #}
-{% include '_posts.html' %}
+{% include 'posts/_posts.html' %}
 {#  文章评论区  #}
 {{ wtf.quick_form(form) }}
 
-{% include '_comments.html' %}
+{% include 'posts/_comments.html' %}
 
 {% endblock %}
