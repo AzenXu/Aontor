@@ -4,7 +4,7 @@
 import os
 from app import create_app, db
 from app.models import User, Role, Post
-from flask_script import Manager, Shell
+from flask_script import Manager, Shell, Server
 from flask_migrate import Migrate, MigrateCommand
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
@@ -19,6 +19,12 @@ def make_shell_context():
 
 manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command('db', MigrateCommand)
+manager.add_command('runserver', Server(
+    use_debugger=True,
+    use_reloader=True,
+    host='127.0.0.1',
+    port=5432
+))
 
 
 # 这里的配置是为了单元测试可以跑起来
